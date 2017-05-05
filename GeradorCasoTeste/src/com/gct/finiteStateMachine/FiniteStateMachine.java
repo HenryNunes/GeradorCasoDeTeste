@@ -131,14 +131,16 @@ public class FiniteStateMachine{
 		
 		List<Tupla<State, State>> tuplas = listaTuplas(this.states);
 		List<Tupla<State, State>> tuplasRemover = new ArrayList<Tupla<State, State>>();
-		
+		System.err.println("Inicio da remoção de Tuplas");
+		System.err.println("Tuplas Iniciais" + tuplas.toString());
 		// Elimina tuplas 
 		for(Tupla<State, State> t : tuplas)
 		{
 			// Que não sejam finais com finais
 			if((finalStates.contains(t.getPrimeiro()) && !finalStates.contains(t.getSegundo())) ||
-					(finalStates.contains(t.getPrimeiro()) && finalStates.contains(t.getSegundo())))
+					(!finalStates.contains(t.getPrimeiro()) && finalStates.contains(t.getSegundo())))
 			{
+				System.err.println("removida por estados finais: " + t.toString());
 				tuplasRemover.add(t);
 				continue;
 			}
@@ -163,7 +165,9 @@ public class FiniteStateMachine{
 				}
 			}
 		}
-		tuplas.removeAll(tuplasRemover);
+		System.err.println("Todas tuplas para remover: " + tuplasRemover.toString());
+		Boolean valor = tuplas.removeAll(tuplasRemover);
+		System.err.println(valor);
 		
 		// Recursão que remove tuplas que apontam para tuplas previamente removidas
 		removerEstadosNãofundiveis(tuplas);
@@ -176,7 +180,7 @@ public class FiniteStateMachine{
 		List<Tupla<State, State>> resposta = new ArrayList<Tupla<State, State>>();
 		for(int i = 0; i < lis.size();i++)
 		{
-			for(int b = i; i < lis.size();b++)
+			for(int b = i + 1; b < lis.size();b++)
 			{
 				Tupla<State,State> temp = new Tupla<State,State>(lis.get(i),lis.get(b));
 				resposta.add(temp);				
