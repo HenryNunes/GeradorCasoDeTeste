@@ -18,4 +18,9 @@ public class Tupla<M, N> {
 	{
 		return this.segundo;
 	}
+	@Override
+	public String toString()
+	{
+		return  "(" + this.primeiro.toString() + ", " + this.segundo.toString() + ")"; 
+	}
 }

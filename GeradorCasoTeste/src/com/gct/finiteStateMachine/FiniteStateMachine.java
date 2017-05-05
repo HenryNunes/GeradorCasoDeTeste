@@ -132,22 +132,42 @@ public class FiniteStateMachine{
 		List<Tupla<State, State>> tuplas = listaTuplas(this.states);
 		List<Tupla<State, State>> tuplasRemover = new ArrayList<Tupla<State, State>>();
 		
+		// Elimina tuplas 
 		for(Tupla<State, State> t : tuplas)
 		{
+			// Que não sejam finais com finais
 			if((finalStates.contains(t.getPrimeiro()) && !finalStates.contains(t.getSegundo())) ||
 					(finalStates.contains(t.getPrimeiro()) && finalStates.contains(t.getSegundo())))
 			{
 				tuplasRemover.add(t);
+				continue;
 			}
-			else if()
+			// Com output diefernte na transição
+			for(String in : this.inputAlphabet)
 			{
-				
+				String sPri = outputResultante(t.getPrimeiro(), in);
+				String sSeg = outputResultante(t.getSegundo(), in);		
+				if((sPri == null && sSeg != null) || (sPri != null && sSeg == null) )
+				{
+					tuplasRemover.add(t);
+					break;
+				}
+				else if(sPri == null && sSeg== null)
+				{
+					continue;
+				}
+				else if(!sPri.equals(sSeg))
+				{
+					tuplasRemover.add(t);
+					break;
+				}
 			}
-			
-			
 		}
+		tuplas.removeAll(tuplasRemover);
 		
-		
+		// Recursão que remove tuplas que apontam para tuplas previamente removidas
+		removerEstadosNãofundiveis(tuplas);
+		System.err.println(tuplas.toString());
 		
 		return resposta;
 	}
@@ -196,6 +216,37 @@ public class FiniteStateMachine{
 		}
 		return resposta;
 	}
+	private void removerEstadosNãofundiveis(List<Tupla<State, State>> lis)
+	{
+		Tupla<State,State> remover = null;
+		Loop:
+		for(Tupla<State,State> t : lis )
+		{
+			for(String in : inputAlphabet)
+			{
+				State ePri = estadoResultante(t.getPrimeiro(), in);
+				State eSeg = estadoResultante(t.getSegundo(), in);
+				
+				if(ePri == null && eSeg == null)continue;
+				else if(ePri == null || eSeg == null )
+				{
+					remover = t;
+					break Loop;
+				}
+				else if(lis.contains(new Tupla<State, State>(ePri, eSeg)))
+				{
+					remover = t;
+					break Loop;
+				}
+			}
+		}
+		if(remover != null)
+		{
+			lis.remove(remover);
+			this.removerEstadosNãofundiveis(lis);
+		}		
+	}
+	
 	
     @Override
     public String toString()
