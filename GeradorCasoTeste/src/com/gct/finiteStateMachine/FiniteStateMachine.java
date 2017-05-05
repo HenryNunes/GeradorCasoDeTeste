@@ -4,6 +4,9 @@
 package com.gct.finiteStateMachine;
 
 import java.util.List;
+
+import com.gct.utilities.Tupla;
+
 import java.util.ArrayList;
 
 public class FiniteStateMachine{
@@ -117,6 +120,81 @@ public class FiniteStateMachine{
 
 	public void addTransition(Transition transition){
 		transitions.add(transition);
+	}
+	
+	public FiniteStateMachine minimization() 
+	{
+		FiniteStateMachine resposta = new FiniteStateMachine();
+		resposta.setName(this.name);
+		resposta.setInputAlphabet(this.inputAlphabet);
+		resposta.setOutputAlphabet(this.outputAlphabet);
+		
+		List<Tupla<State, State>> tuplas = listaTuplas(this.states);
+		List<Tupla<State, State>> tuplasRemover = new ArrayList<Tupla<State, State>>();
+		
+		for(Tupla<State, State> t : tuplas)
+		{
+			if((finalStates.contains(t.getPrimeiro()) && !finalStates.contains(t.getSegundo())) ||
+					(finalStates.contains(t.getPrimeiro()) && finalStates.contains(t.getSegundo())))
+			{
+				tuplasRemover.add(t);
+			}
+			else if()
+			{
+				
+			}
+			
+			
+		}
+		
+		
+		
+		return resposta;
+	}
+	private List<Tupla<State, State>> listaTuplas(List<State> lis)
+	{
+		List<Tupla<State, State>> resposta = new ArrayList<Tupla<State, State>>();
+		for(int i = 0; i < lis.size();i++)
+		{
+			for(int b = i; i < lis.size();b++)
+			{
+				Tupla<State,State> temp = new Tupla<State,State>(lis.get(i),lis.get(b));
+				resposta.add(temp);				
+			}
+		}
+		return resposta;
+	}
+	private State fundirEstados(Tupla<State, State> t)
+	{
+		State resposta = new State();
+		resposta.setId(t.getPrimeiro().getId() + t.getSegundo().getId());
+		resposta.setName(t.getPrimeiro().getName() + t.getSegundo().getName());
+		
+		return resposta;
+	}
+	private State estadoResultante(State org, String input)
+	{
+		State resposta = null;
+		for(Transition t : transitions)
+		{
+			if(org.equals(t.getSourceState()) && input.equals(t.getInput()))
+			{
+				resposta = t.getTargetState();
+			}
+		}
+		return resposta;
+	}
+	private String outputResultante(State org, String input)
+	{
+		String resposta = null;
+		for(Transition t : transitions)
+		{
+			if(org.equals(t.getSourceState()) && input.equals(t.getInput()))
+			{
+				resposta = t.getOutput();
+			}
+		}
+		return resposta;
 	}
 	
     @Override
