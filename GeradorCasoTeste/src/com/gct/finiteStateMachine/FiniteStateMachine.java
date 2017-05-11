@@ -133,8 +133,8 @@ public class FiniteStateMachine{
 		
 		List<Tupla<State, State>> tuplas = listaTuplas(this.states);
 		List<Tupla<State, State>> tuplasRemover = new ArrayList<Tupla<State, State>>();
-		System.err.println("Inicio da remoção de Tuplas");
-		System.err.println("Tuplas Iniciais" + tuplas.toString());
+		//System.err.println("Inicio da remoção de Tuplas");
+		//System.err.println("Tuplas Iniciais" + tuplas.toString());
 		// Elimina tuplas 
 		for(Tupla<State, State> t : tuplas)
 		{
@@ -142,7 +142,7 @@ public class FiniteStateMachine{
 			if((finalStates.contains(t.getPrimeiro()) && !finalStates.contains(t.getSegundo())) ||
 					(!finalStates.contains(t.getPrimeiro()) && finalStates.contains(t.getSegundo())))
 			{
-				System.err.println("removida por estados finais: " + t.toString());
+				//System.err.println("removida por estados finais: " + t.toString());
 				tuplasRemover.add(t);
 				continue;
 			}
@@ -167,13 +167,14 @@ public class FiniteStateMachine{
 				}
 			}
 		}
-		System.err.println("Todas tuplas para remover: " + tuplasRemover.toString());
-		Boolean valor = tuplas.removeAll(tuplasRemover);
-		System.err.println(valor);
+		//System.err.println("Todas tuplas para remover: " + tuplasRemover.toString());
+		tuplas.removeAll(tuplasRemover);
+		//System.err.println(valor);
 		
 		// Recursão que remove tuplas que apontam para tuplas previamente removidas
+		//System.err.println("Tuplas pré-filtradas" + tuplas.toString());
 		removerEstadosNãofundiveis(tuplas);
-		System.err.println(tuplas.toString());
+		System.err.println("Tuplas Finais" + tuplas.toString());
 		
 		//Hora de fundir tudo
 		Set<State> estadosFundiveis = new HashSet<State>();
@@ -207,7 +208,7 @@ public class FiniteStateMachine{
 			Set<State> novoEstadoConjunto = new HashSet<State>();
 			estadosCompativeis(tuplas, (State) estadosFundiveis.toArray()[0], estados, novoEstadoConjunto);
 			estadosFundiveis.removeAll(novoEstadoConjunto);
-			System.err.println(novoEstadoConjunto);
+			//System.err.println(novoEstadoConjunto);
 			
 			//Tenho um conjunto com estados fundiveis, preciso criar o estado
 			State estadoNovo = new State();
@@ -221,7 +222,7 @@ public class FiniteStateMachine{
 			estadosNovos.add(estadoNovo);
 			if(flagFinal)estadosFinaisNovos.add(estadoNovo); 
 			
-			System.err.println("Finais: "+ estadosNovos.toString());
+			//System.err.println("Finais: "+ estadosNovos.toString());
 			
 			// Alterar as trancições
 			for(State s : novoEstadoConjunto)
@@ -235,16 +236,16 @@ public class FiniteStateMachine{
 			//Remove duplicatas
 			Set<Transition> temp = new HashSet<Transition>();
 			temp.addAll(transicoesNovas);
-			System.err.println("Temp" + temp);
+			//System.err.println("Temp" + temp);
 			transicoesNovas.clear();
 			transicoesNovas.addAll(temp);
 		}
 		
-		//Adiciona a maquina de estados
+		//Adiciona na maquina de estados
 		resposta.setFinalStates(estadosFinaisNovos);
 		resposta.setStates(estadosNovos);
 		resposta.setTransitions(transicoesNovas);
-		System.err.println(resposta);
+		//System.err.println(resposta);
 		return resposta;
 	}
 	
@@ -323,15 +324,27 @@ public class FiniteStateMachine{
 			{
 				State ePri = estadoResultante(t.getPrimeiro(), in);
 				State eSeg = estadoResultante(t.getSegundo(), in);
+				System.err.println("Tuplas presentes: " + lis);
+				System.err.println("tupla original " + t);
+				System.err.println("tupla destino " + new Tupla<State, State>(ePri, eSeg));
+				System.err.println("Contem Essa tupla na lista? " + lis.contains(new Tupla<State, State>(ePri, eSeg)));
 				
+				Tupla<State, State> temp = new Tupla<State, State>(t.getPrimeiro(),t.getSegundo());
+				Tupla<State, State> temp2 = new Tupla<State, State>(eSeg,ePri);
+				ArrayList<Tupla<State,State>> temp3 = new ArrayList<Tupla<State,State>>();
+				temp3.add(temp);
+				System.err.println("Teste de tuplas: " + temp3.contains(temp2));
+
 				if(ePri == null && eSeg == null)continue;
 				else if(ePri == null || eSeg == null )
 				{
+					
 					remover = t;
 					break Loop;
 				}
-				else if(lis.contains(new Tupla<State, State>(ePri, eSeg)))
+				else if(!lis.contains(new Tupla<State, State>(ePri, eSeg)) && !(ePri.equals(eSeg)) )
 				{
+					System.err.println("tupla para remover" + t + "\n");
 					remover = t;
 					break Loop;
 				}

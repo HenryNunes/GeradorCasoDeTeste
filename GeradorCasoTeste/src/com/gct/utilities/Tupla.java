@@ -60,4 +60,14 @@ public class Tupla<M, N> {
 		}
 		return true;
 	}
+	@Override
+	public boolean equals(Object obj)
+	{
+		if(obj == null)return false;
+		if(!(obj instanceof Tupla))return false;
+		Tupla<M,N> temp = (Tupla<M,N>) obj;
+		if(this.primeiro.equals(temp.getPrimeiro()) && this.segundo.equals(temp.getSegundo()))return true;
+		if(this.primeiro.equals(temp.getSegundo()) && this.segundo.equals(temp.getPrimeiro()))return true;
+		return false;		
+	}
 }
