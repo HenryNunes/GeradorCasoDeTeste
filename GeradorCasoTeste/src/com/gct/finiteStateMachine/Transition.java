@@ -3,6 +3,8 @@
 
 package com.gct.finiteStateMachine;
 
+import org.hamcrest.core.IsInstanceOf;
+
 public class Transition{
 	private State sourceState;
 	private State targetState;
@@ -54,4 +56,24 @@ public class Transition{
 	public String toString(){
 		return sourceState.getName() + " -> " + targetState.getName();
 	}
+
+	@Override
+	public int hashCode()
+	{
+		return this.sourceState.hashCode() + this.targetState.hashCode() + this.input.hashCode() + this.output.hashCode();
+	}
+	
+	@Override 
+	public boolean equals(Object aThat) {
+	    if(aThat == null) return false;
+		if ( this == aThat ) return true;
+	    if ( !(aThat instanceof Transition) ) return false;
+	    Transition that = (Transition)aThat;
+	    
+	    return this.getSourceState().equals(that.getSourceState()) &&
+	    		this.getTargetState().equals(that.getTargetState()) &&
+	    		this.getInput().equals(that.getInput()) &&
+	    		this.getOutput().equals(that.getOutput());
+	  }
+	
 }

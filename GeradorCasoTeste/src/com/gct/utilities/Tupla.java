@@ -23,4 +23,41 @@ public class Tupla<M, N> {
 	{
 		return  "(" + this.primeiro.toString() + ", " + this.segundo.toString() + ")"; 
 	}
+	
+	public Boolean Contains(Object obj)
+	{
+		if(testM(obj))
+		{
+			if(obj.equals(primeiro))return true;
+		}
+		if(testN(obj))
+		{
+			if(obj.equals(segundo))return true;
+		}
+		return false;
+	}
+	private Boolean testM(Object obj)
+	{
+		try
+		{
+			M temp = (M) obj;
+		}
+		catch(Exception e)
+		{
+			return false;
+		}
+		return true;
+	}
+	private Boolean testN(Object obj)
+	{
+		try
+		{
+			N temp = (N) obj;
+		}
+		catch(Exception e)
+		{
+			return false;
+		}
+		return true;
+	}
 }

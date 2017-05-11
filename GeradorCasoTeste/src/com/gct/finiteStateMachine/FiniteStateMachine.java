@@ -4,10 +4,12 @@
 package com.gct.finiteStateMachine;
 
 import java.util.List;
+import java.util.Set;
 
 import com.gct.utilities.Tupla;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 public class FiniteStateMachine{
     /// EPSILON constant. Denotes empty sets.
@@ -173,8 +175,99 @@ public class FiniteStateMachine{
 		removerEstadosNãofundiveis(tuplas);
 		System.err.println(tuplas.toString());
 		
+		//Hora de fundir tudo
+		Set<State> estadosFundiveis = new HashSet<State>();
+		for(Tupla<State, State> t : tuplas)
+		{
+			estadosFundiveis.add(t.getPrimeiro());
+			estadosFundiveis.add(t.getSegundo());
+		}
+		
+		ArrayList<State> estadosNovos = new ArrayList<State>();
+		ArrayList<State> estadosFinaisNovos = new ArrayList<State>();
+		ArrayList<Transition> transicoesNovas = new ArrayList<Transition>();
+		
+		//Adiciona os estados que não vao ser fundidos
+		estadosNovos.addAll(this.getStates());
+		estadosNovos.removeAll(estadosFundiveis);
+		estadosFinaisNovos.addAll(this.getFinals());
+		estadosFinaisNovos.removeAll(estadosFundiveis);
+		transicoesNovas.addAll(this.transitions);
+		
+		//Criação dos novos estados
+		while(!(estadosFundiveis.isEmpty()))
+		{
+			Set<State> estados = new HashSet<State>();
+			for(Tupla<State, State> t : tuplas)
+			{
+				estados.add(t.getPrimeiro());
+				estados.add(t.getSegundo());
+			}
+			
+			Set<State> novoEstadoConjunto = new HashSet<State>();
+			estadosCompativeis(tuplas, (State) estadosFundiveis.toArray()[0], estados, novoEstadoConjunto);
+			estadosFundiveis.removeAll(novoEstadoConjunto);
+			System.err.println(novoEstadoConjunto);
+			
+			//Tenho um conjunto com estados fundiveis, preciso criar o estado
+			State estadoNovo = new State();
+			estadoNovo.setId("");
+			Boolean flagFinal = false;
+			for(State s : novoEstadoConjunto)
+			{
+				if(this.finalStates.contains(s))flagFinal = true;
+				estadoNovo = fundirEstados(new Tupla<State, State>(estadoNovo, s));				
+			}
+			estadosNovos.add(estadoNovo);
+			if(flagFinal)estadosFinaisNovos.add(estadoNovo); 
+			
+			System.err.println("Finais: "+ estadosNovos.toString());
+			
+			// Alterar as trancições
+			for(State s : novoEstadoConjunto)
+			{
+				for(Transition t : transicoesNovas)
+				{
+					if(t.getSourceState().equals(s))t.setSourceState(estadoNovo);
+					if(t.getTargetState().equals(s))t.setTargetState(estadoNovo);
+				}
+			}
+			//Remove duplicatas
+			Set<Transition> temp = new HashSet<Transition>();
+			temp.addAll(transicoesNovas);
+			System.err.println("Temp" + temp);
+			transicoesNovas.clear();
+			transicoesNovas.addAll(temp);
+		}
+		
+		//Adiciona a maquina de estados
+		resposta.setFinalStates(estadosFinaisNovos);
+		resposta.setStates(estadosNovos);
+		resposta.setTransitions(transicoesNovas);
+		System.err.println(resposta);
 		return resposta;
 	}
+	
+	private void estadosCompativeis(List<Tupla<State, State>>  tuplas, State head, Set<State> estados, Set<State> resposta)
+	{
+		resposta.add(head);
+		estados.remove(head);
+		State estado = null;
+		loop:
+		for(State s : estados)
+		{
+			for(Tupla<State, State> t : tuplas)
+			{
+				if(t.Contains(s) && t.Contains(head)) 
+					{
+						estado = s;
+						break loop;
+					}
+			}
+		}
+		if(! (estado == null))estadosCompativeis(tuplas, estado, estados, resposta);
+	}
+
 	private List<Tupla<State, State>> listaTuplas(List<State> lis)
 	{
 		List<Tupla<State, State>> resposta = new ArrayList<Tupla<State, State>>();
@@ -250,6 +343,81 @@ public class FiniteStateMachine{
 			this.removerEstadosNãofundiveis(lis);
 		}		
 	}
+	
+	
+	
+//	public FiniteStateMachine minimizationHopcraft()
+//	{
+//		Set<Set<State>> P = new HashSet<Set<State>>();
+//		Set<Set<State>> W = new HashSet<Set<State>>();
+//		
+//		if(!(finalStates == null)) 
+//			{
+//				P.add(new HashSet<State>(this.finalStates));
+//				Set<State> temp = new HashSet<State>(this.states);
+//				temp.removeAll(this.finalStates);
+//				P.add(temp);
+//			}
+//		else
+//		{
+//			P.add(new HashSet<State>(this.states));
+//		}
+//		//caso o set esteja vazio não vai funcionar
+//		W.add(new HashSet<State>(this.finalStates));
+//		while(!W.isEmpty())
+//		{
+//			Set<State> A = pegaElementoSet(W);
+//			W.remove(A);
+//			for(String in : inputAlphabet)
+//			{
+//
+//				Set<State> X = listarEstadosOrigem(A ,in);
+//				for()
+//				
+//				
+//			}
+//			
+//			
+//		}
+//		return null;
+//	}
+	private Set<State> pegaElementoSet(Set<Set<State>> set)
+	{
+		Set<State> resposta = null;
+		for(Set<State> s : set)
+		{
+			resposta = s;
+			break;
+		}
+		return resposta;
+	}
+	
+	private Set<State> listarEstadosOrigem(Set<State> set, String input)
+	{
+		Set<State> resultado = new HashSet<State>();
+		for(State s : set)
+		{
+			if(!(estadoOrigem(s,input) == null))resultado.add(estadoOrigem(s,input));
+		}	
+		return resultado;
+	}
+	
+	private State estadoOrigem(State state, String input)
+	{
+		State resultado = null;
+		for(Transition t: transitions)
+		{
+			if(t.getTargetState().equals(state) && t.getInput().equals(input))
+			{
+				resultado = t.getSourceState();
+				break;
+			}	
+		}
+		return resultado;
+	}
+	
+
+	
 	
 	
     @Override
