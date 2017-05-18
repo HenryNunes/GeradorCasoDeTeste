@@ -53,6 +53,11 @@ public class FiniteStateMachine{
 	}
 
 	public void setInputAlphabet(ArrayList<String> inputAlphabet) {
+		//Adiciona também o Epslon
+		if(!inputAlphabet.contains(EPSILON))
+		{
+			this.inputAlphabet.add(EPSILON);
+		}	
 		this.inputAlphabet = inputAlphabet;
 	}
 
@@ -324,16 +329,19 @@ public class FiniteStateMachine{
 			{
 				State ePri = estadoResultante(t.getPrimeiro(), in);
 				State eSeg = estadoResultante(t.getSegundo(), in);
-				System.err.println("Tuplas presentes: " + lis);
+				if(!(ePri == null || eSeg == null))
+				{
+				System.err.println("\nTuplas presentes: " + lis);
 				System.err.println("tupla original " + t);
 				System.err.println("tupla destino " + new Tupla<State, State>(ePri, eSeg));
 				System.err.println("Contem Essa tupla na lista? " + lis.contains(new Tupla<State, State>(ePri, eSeg)));
+				}
 				
-				Tupla<State, State> temp = new Tupla<State, State>(t.getPrimeiro(),t.getSegundo());
-				Tupla<State, State> temp2 = new Tupla<State, State>(eSeg,ePri);
-				ArrayList<Tupla<State,State>> temp3 = new ArrayList<Tupla<State,State>>();
-				temp3.add(temp);
-				System.err.println("Teste de tuplas: " + temp3.contains(temp2));
+//				Tupla<State, State> temp = new Tupla<State, State>(t.getPrimeiro(),t.getSegundo());
+//				Tupla<State, State> temp2 = new Tupla<State, State>(eSeg,ePri);
+//				ArrayList<Tupla<State,State>> temp3 = new ArrayList<Tupla<State,State>>();
+//				temp3.add(temp);
+//				System.err.println("Teste de tuplas: " + temp3.contains(temp2) + "\n");
 
 				if(ePri == null && eSeg == null)continue;
 				else if(ePri == null || eSeg == null )
