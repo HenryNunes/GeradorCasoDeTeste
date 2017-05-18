@@ -54,10 +54,7 @@ public class FiniteStateMachine{
 
 	public void setInputAlphabet(ArrayList<String> inputAlphabet) {
 		//Adiciona também o Epslon
-		if(!inputAlphabet.contains(EPSILON))
-		{
-			this.inputAlphabet.add(EPSILON);
-		}	
+		if(!inputAlphabet.contains(EPSILON))inputAlphabet.add(EPSILON);
 		this.inputAlphabet = inputAlphabet;
 	}
 
@@ -74,6 +71,7 @@ public class FiniteStateMachine{
 	}
 
 	public void setOutputAlphabet(ArrayList<String> outputAlphabet) {
+		if(!outputAlphabet.contains(EPSILON))outputAlphabet.add(EPSILON);
 		this.outputAlphabet = outputAlphabet;
 	}
 
@@ -327,12 +325,14 @@ public class FiniteStateMachine{
 		{
 			for(String in : inputAlphabet)
 			{
+				
 				State ePri = estadoResultante(t.getPrimeiro(), in);
 				State eSeg = estadoResultante(t.getSegundo(), in);
+				System.err.println("\nTuplas presentes: " + lis);
+				System.err.println("Input: " + in);
+				System.err.println("tupla original " + t);
 				if(!(ePri == null || eSeg == null))
 				{
-				System.err.println("\nTuplas presentes: " + lis);
-				System.err.println("tupla original " + t);
 				System.err.println("tupla destino " + new Tupla<State, State>(ePri, eSeg));
 				System.err.println("Contem Essa tupla na lista? " + lis.contains(new Tupla<State, State>(ePri, eSeg)));
 				}
