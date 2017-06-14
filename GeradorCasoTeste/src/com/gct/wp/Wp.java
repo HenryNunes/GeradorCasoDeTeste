@@ -435,6 +435,8 @@ public class Wp{
     	while(bfsList.size() > 0 && visitedStates.size() != fsm.getStates().size()){
     		//obtém o primeiro estado de bfsList e suas respectivas transições
     		State currentState = bfsList.remove(0);
+        	
+
     		ArrayList<Transition> currentStateTransitions = getTransitionStateSource(currentState, transitions);
     		
     		//itera sobre todas as transições deste estado
@@ -479,10 +481,13 @@ public class Wp{
         removeEqualsState(listStatePair);
         //para cada par de estado da FSM.
         
+        for(StatePair statePair : listStatePair){//adicionado posteriormente
+            addMissingTransitions(statePair, fsm);
+        }
+        
         for(StatePair statePair : listStatePair){
             //obtem o conjunto W de cada par de estado.
             getWiStatePair(statePair, fsm);
-
         }
         //remove as sequências Wi repetidas.
         removeEqualsSequence(fsm);
@@ -551,9 +556,12 @@ public class Wp{
     
     private void addMissingTransitions(StatePair statePair, FiniteStateMachine fsm){
     	//obtém as entradas dos dois estados
+    	//System.err.println("Par de Estados: " + statePair);
     	ArrayList<String> entradasSi = new ArrayList<>(Arrays.asList(getAllowedInputs(statePair.getSi())));
+    	//System.err.println("Si " + entradasSi);
     	ArrayList<String> entradasSj = new ArrayList<>(Arrays.asList(getAllowedInputs(statePair.getSj())));
-        for(String entrada : fsm.getInputAlphabet()){
+    	//System.err.println("Sj " +entradasSi);
+    	for(String entrada : fsm.getInputAlphabet()){
         	if(!entradasSi.contains(entrada)){
         		Transition transition = new Transition(statePair.getSi(), statePair.getSi(), entrada, FiniteStateMachine.EPSILON);
         		fsm.addTransition(transition);
@@ -563,35 +571,49 @@ public class Wp{
         		fsm.addTransition(transition);
         	}
         }
+    	//System.err.println("Trans: " + fsm.getTransitions());
     }
     
     private void getListOutoutStatePair(StatePair statePair, FiniteStateMachine fsm){
     	//formatações entre tipos de estruturas
     	ArrayList<ArrayList<String>> inputs = new ArrayList<ArrayList<String>>();
+    	
     	String[] inputsAux = getAllowedInputs(statePair.getSi());
+    	System.err.println("getAllowedInputs: " + inputsAux);
     	for(int i = 0; i < inputsAux.length; i++){
     		ArrayList<String> aux = new ArrayList<>();
     		aux.add(inputsAux[i]);
     		inputs.add(aux);
     	}
+
     	//neste momento, temos um ArrayList de ArrayList com as entradas, por exemplo:
     	//as entradas eram [x, y]
     	//agora são [[x], [y]]
     	
     	ArrayList<String> wi = new ArrayList<String>();
-    	
+
     	while(inputs.size() != 0){
+    		System.err.println("Estados: " + statePair);
+    		System.err.println("Tamanho Inputs: " + inputs.size());
     		ArrayList<String> input = inputs.get(0);
     		inputs.remove(0);
+    		//input.remove(FiniteStateMachine.EPSILON);
+    		System.err.println("tamanho input: " + input.size());
+    		//System.err.println("input: " + input);
     		Transition t1 = stateWalk(statePair.getSi(), input);
 		    Transition t2 = stateWalk(statePair.getSj(), input);
+		    System.err.println("Comparação de Output: " + t1.getOutput().equals(t2.getOutput()));
+		    System.err.println("Output1: " + t1.getOutput());
+		    System.err.println("Output2: " + t2.getOutput());
 		    //se a sequencia é aceita, coloca-a no wiSet da fsm e no dic de cada estado do par de estado
-		    if (!t1.getOutput().equals(t2.getOutput())){
-		        wi = input;
+		    //if (!t1.getOutput().equals(t2.getOutput())){
+		    if (!t1.equals(t2)){ 
+		    	wi = input;
 		        
 		        //joga input no dic do estado Si do statePair
 		        ArrayList<ArrayList<String>> wStateList = wiMap.get(statePair.getSi().getName());
 		        if(wStateList == null){
+		        	System.err.println("Parou 1");
 		        	wStateList = new ArrayList<ArrayList<String>>();
 		        	wiMap.put(statePair.getSi().getName(), wStateList);
 		        }
@@ -600,6 +622,7 @@ public class Wp{
 		        	//precisa fazer essa cópia
 		        	//caso contrario, o metodo removeEqualsSequence(fsm) apaga informações do hashmap
 		        	//já que os itens que estão dentro deles são referências
+		        	System.err.println("Parou 2");
 		        	ArrayList<String> aux = new ArrayList<>(input);
 		        	wStateList.add(aux);
 		        }
@@ -607,29 +630,35 @@ public class Wp{
 	        	//joga input no dic do estado Sj do statePair
 	        	wStateList = wiMap.get(statePair.getSj().getName());
 		        if(wStateList == null){
+		        	System.err.println("Parou 3");
 		        	wStateList = new ArrayList<ArrayList<String>>();
 		        	wiMap.put(statePair.getSj().getName(), wStateList);
 		        }
 		        //se o conjunto W do estado Sj não possui input, adiciona
 		        if(!wStateList.contains(input)){
 		        	//mesma coisa do trecho de cima
+		        	System.err.println("Parou 4");
 		        	ArrayList<String> aux = new ArrayList<>(input);
 		        	wStateList.add(aux);
 		        }	 
-	        	
+		        
 		        break;
 		    }
 		    //caso a entrada não seja aceita, gera novas entradas baseadas nesta que não foi aceita
 		    //e nas entradas padrão do estado. Ex: rejeita [x], gera [x, x] e [x, y]
 		    else {
+		    	System.err.println("Parou 5");
 		    	for(String initialInput : inputsAux){
+		    		System.err.println(initialInput);
 		    		ArrayList<String> novaSeq = new ArrayList<>();
 		    		novaSeq.addAll(input);
 		    		novaSeq.add(initialInput);
 		    		inputs.add(novaSeq);
 		    	}
 		    }
-    	}   	
+    	}  
+    	
+    	System.err.println("Fim do Loop");
     	fsm.getWiSet().add(wi);
     }
     
@@ -701,16 +730,28 @@ public class Wp{
                 listTransition.add(t);
             }
         }
+		//System.err.println("getTransitionStateSource: " + listTransition.size());
+		//System.err.println("getTransitionStateSource: " + listTransition.get(0).toString());
+		//System.err.println("getTransitionStateSource: " + list.toString());
+
         return listTransition;
     }
     
     private Transition stateWalk(State initial, ArrayList<String> inputs){
     	State next = initial;
     	Transition transition = null;
+    	System.err.println("WALK");
+		System.err.println("estado: " +initial);
+		System.err.println("inputs: " +inputs);
     	for(String input : inputs){
-    		transition = getTransitionStateSource(next, input, fsm.getTransitions()).get(0);	
+    		//System.err.println("error: " + next + " - " + input);
+    		//System.err.println("error: " + getTransitionStateSource(next, input, fsm.getTransitions()).size() );
+
+    		transition = getTransitionStateSource(next, input, fsm.getTransitions()).get(0);
     		next = transition.getTargetState();
+    		//System.err.println("proximo: " + next);
     	}
+    	System.err.println("transition: " + transition);
     	return transition;
     }
 
@@ -800,7 +841,7 @@ public class Wp{
     // Gets the allowed inputs list of a given state S.
     private String[] getAllowedInputs(State s){
     	List<String> inputs = fsm.getTransitions().stream().filter(x -> x.getSourceState().equals(s)).map(x -> x.getInput()).distinct().collect(Collectors.toList());
-        int size = inputs.size();
+    	int size = inputs.size();
         String[] inputsArray = new String[size];
         for(int i = 0; i < size; i++){
         	inputsArray[i] = inputs.get(i);
